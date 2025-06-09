@@ -74,10 +74,39 @@ namespace Graphics {
 		Vector3D dir;
 	};
 
+	/*
+	In matematica, i quaternioni sono entità introdotte da William Rowan Hamilton nel 1843 come estensioni dei numeri complessi.
+	
+	Un quaternione è un oggetto formale del tipo:
+	
+	Quaternion = ai + bj + ck + d, dove a,b,c,d sono numeri reali e i,j,k sono dei simboli che si comportano in modo simile all'unità immaginaria dei numeri complessi.
+	
+	Re(Quaternion) = d
+	Im(Quaternion) = ai + bj + ck
+	*/
 	class Quaternion {
 
-	
+	private:
+		Vector3D img;
+		Scalar real;
 
+	public:
+		Quaternion();
+		Quaternion(Scalar real, Vector3D img);
+
+		Quaternion operator*(const Quaternion& other);
+		Quaternion operator+(const Quaternion& other);
+		Quaternion operator-(const Quaternion& other);
+		
+		Scalar getReal() const { return real; }
+		Vector3D getImg() const { return img; }
+		
+		void setReal(Scalar newReal) { real = newReal; }
+		void setImg(Vector3D newImg) { img = newImg; }
+
+		Quaternion conjugate();
+		Vector3D rotate(const Vector3D& vector);
+	
 	};
 
 	class Transforms {
