@@ -19,6 +19,7 @@ namespace Graphics {
 	bool operator==(const Vector3D& vector1, const Vector3D& vector2);
 	
 	void printVector3D(const Vector3D& vector);
+	void printQuaternion(const Quaternion& quaternion);
 
 	Scalar dot(const Vector3D& vec1, const Vector3D& vec2);
 	Vector3D cross(const Vector3D& vec1, const Vector3D& vec2);
@@ -88,20 +89,22 @@ namespace Graphics {
 
 	private:
 		Vector3D img;
-		Scalar real;
+		Scalar re;
 
 	public:
 		Quaternion();
-		Quaternion(Scalar real, Vector3D img);
+		Quaternion(Vector3D img, Scalar re);
+		Quaternion(Scalar imgX, Scalar imgY, Scalar imgZ, Scalar re);
+		
 
 		Quaternion operator*(const Quaternion& other);
 		Quaternion operator+(const Quaternion& other);
 		Quaternion operator-(const Quaternion& other);
 		
-		Scalar getReal() const { return real; }
+		Scalar getRe() const { return re; }
 		Vector3D getImg() const { return img; }
 		
-		void setReal(Scalar newReal) { real = newReal; }
+		void setRe(Scalar newRe) { re = newRe; }
 		void setImg(Vector3D newImg) { img = newImg; }
 
 		Quaternion conjugate();

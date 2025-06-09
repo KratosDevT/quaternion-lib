@@ -59,9 +59,10 @@ namespace Graphics
 	//print
 	void printVector3D(const Vector3D& vector)
 	{
-		std::cout << "[" << vector.getX() << "," << vector.getY() << "," << vector.getZ() << "]";
-		std::cout << std::endl;
+		std::cout << "[" << vector.getX() << "," << vector.getY() << "," << vector.getZ() << "]" << std::endl;
 	}
+
+
 
 	Scalar dot(const Vector3D& vec1, const Vector3D& vec2)
 	{
@@ -124,6 +125,17 @@ namespace Graphics
 
 	Ray::Ray(){}
 	Ray::Ray(Vector3D vec1, Vector3D vec2) : start{ vec1 }, dir{ vec2 }	{}
+
+
+	void printQuaternion(const Quaternion& quaternion)
+	{
+		std::cout << "[" << quaternion.getImg().getX() << "i, " << quaternion.getImg().getY() << "j, " << quaternion.getImg().getZ() << "k, " << quaternion.getRe() << "]" << std::endl;
+	}
+
+	Quaternion::Quaternion() : img{ Vector3D::ORIGIN }, re{ 0 } {}
+	Quaternion::Quaternion(Vector3D _img, Scalar _re) : img{ _img }, re{ _re } {}
+	Quaternion::Quaternion(Scalar _x, Scalar _y, Scalar _z, Scalar _re) : img{ Vector3D(_x, _y, _z) }, re{ _re } {}
+
 }
 
 
