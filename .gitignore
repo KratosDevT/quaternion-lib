@@ -1,7 +1,7 @@
 #percorsi da ignorare
 
 /[Dd]ebug/
-
+x64/
 #file da ignorare
 .vs
 
