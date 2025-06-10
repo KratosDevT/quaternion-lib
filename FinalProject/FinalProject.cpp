@@ -51,7 +51,7 @@ namespace Graphics
 
 	bool operator==(const Vector3D& vector1, const Vector3D& vector2)
 	{
-		return (vector1.getX() == vector2.getX()) && (vector1.getY() == vector2.getY()) && (vector1.getZ() == vector2.getZ());
+		return (std::abs(vector1.getX() - vector2.getX()) < FLT_EPSILON) && ((vector1.getY() - vector2.getY()) < FLT_EPSILON) && ((vector1.getZ() - vector2.getZ()) < FLT_EPSILON);
 	}
 
 	
@@ -116,11 +116,7 @@ namespace Graphics
 
 	Vector3D Vector3D::normalize()
 	{
-		Vector3D result;
-		result.setX(getX() / norm());
-		result.setY(getY() / norm());
-		result.setZ(getZ() / norm());
-		return result;
+		return *this * (1/norm());
 	}
 
 	Ray::Ray(){}
@@ -136,8 +132,28 @@ namespace Graphics
 	}
 
 	Quaternion::Quaternion() : img{ Vector3D::ORIGIN }, re{ 0 } {}
-	Quaternion::Quaternion(Vector3D _img, Scalar _re) : img{ _img }, re{ _re } {}
 	Quaternion::Quaternion(Scalar _x, Scalar _y, Scalar _z, Scalar _re) : img{ Vector3D(_x, _y, _z) }, re{ _re } {}
+
+    Quaternion::Quaternion(Vector3D vector, Scalar scalar, QuaternionType type) : re(0)
+    {
+		switch(type) 
+		{
+			case QuaternionType::FROM_COMPONENTS:
+				//std::cout << "QuaternionType componenti" << std::endl;
+				img = vector; 
+				re = scalar;
+				break;
+
+			case QuaternionType::FROM_AXIS_ANGLE:
+				//std::cout << "QuaternionType Asse angolo" << std::endl;
+				img = vector.normalize() * std::sin(scalar / 2.0f);
+				re = std::cos(scalar / 2.0f);
+				break;
+
+			default:
+				std::cerr << "Invalid QuaternionType provided." << std::endl;
+		}
+    }
 
 	bool Quaternion::operator==(const Quaternion& other)
 	{
@@ -148,17 +164,32 @@ namespace Graphics
 	{
 		return Quaternion(other.getImg().getX()+img.getX(), other.getImg().getY()+img.getY(), other.getImg().getZ()+img.getZ(), other.getRe()+re);
 	}
-
-	Quaternion Quaternion::conjugate() 
+	
+	Quaternion Quaternion::operator*(const Quaternion& other)
 	{
-		return Quaternion(-img.getX(), -img.getY(), -img.getZ(), re);
+		Scalar _re = (this->getRe() * other.getRe()) - dot(this->getImg(), other.getImg());
+		Vector3D _img = (this->getRe() * other.getImg()) + (other.getRe() * this->getImg()) + cross(this->getImg(), other.getImg());
+		return Quaternion(_img, _re, QuaternionType::FROM_COMPONENTS);
 	}
 
-	Quaternion operator*(const Quaternion& quaternion1, const Quaternion& quaternion2) 
+	Quaternion operator*(const Scalar& value, const Quaternion& quat)
 	{
-		Scalar _re = (quaternion1.getRe() * quaternion2.getRe()) - dot(quaternion1.getImg(), quaternion2.getImg());
-		Vector3D _img = (quaternion1.getRe() * quaternion2.getImg()) + (quaternion2.getRe() * quaternion1.getImg()) + cross(quaternion1.getImg(), quaternion2.getImg());
-		return Quaternion(_img, _re);
+		return Quaternion(quat.getImg() * value, quat.getRe() * value, QuaternionType::FROM_COMPONENTS);
+	}
+
+	Quaternion operator*(const Quaternion& quat, const Scalar& value)
+	{
+		return value * quat;
+	}
+
+	Quaternion Quaternion::operator-(const Quaternion& other)
+	{
+		return Quaternion(img.getX() - other.getImg().getX() , img.getY() - other.getImg().getY() , img.getZ() - other.getImg().getZ() , re - other.getRe());
+	}
+
+	Quaternion Quaternion::conjugate()
+	{
+		return Quaternion(-img.getX(), -img.getY(), -img.getZ(), re);
 	}
 
 	Scalar Quaternion::norm() 
@@ -170,6 +201,74 @@ namespace Graphics
 	{
 		return (this->getRe() * this->getRe()) + this->getImg().squaredNorm();
 	}
+
+	Quaternion Quaternion::normalize() 
+	{
+		Scalar norm = this->norm();
+		if (norm - 0.0f < FLT_EPSILON)
+		{
+			return Quaternion::ZERO;
+		}
+
+		return Quaternion(this->getImg() * (1/norm), this->getRe() / norm, QuaternionType::FROM_COMPONENTS);
+	}
+
+	bool Quaternion::isRotation()
+	{
+		if ((this->squaredNorm() - 1.0f) < FLT_EPSILON)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+
+	}
+
+	float cleanFloat(float value) {
+		if (std::abs(value) < FLT_EPSILON) {
+			return 0.0f;
+		}
+		return value;
+	}
+
+	Quaternion cleanQuaternion(const Quaternion& q) {
+		return Quaternion(
+			cleanFloat(q.getImg().getX()),
+			cleanFloat(q.getImg().getY()),
+			cleanFloat(q.getImg().getZ()),
+			cleanFloat(q.getRe()));
+	}
+
+	Vector3D Quaternion::rotate(const Vector3D& vector)
+	{
+		if (this->isRotation())
+		{
+			//std::cout << "this: ";
+			//printQuaternion(*this);
+			Quaternion q_vector(vector.getX(), vector.getY(), vector.getZ(), 0);
+			//std::cout << "q_vector: ";
+			//printQuaternion(q_vector);
+			Quaternion q_conjugate = this->conjugate();
+			//std::cout << "q_conjugate: ";
+			//printQuaternion(q_conjugate);
+			Quaternion result = cleanQuaternion((*this * q_vector) * q_conjugate);
+			//std::cout << "result: ";
+			//printQuaternion(result);
+			return result.getImg();
+		}
+		else
+		{
+			std::cerr << "Quaternion is not a valid rotation quaternion." << std::endl;
+		}
+	}
+
+	Quaternion Quaternion::inverse() 
+	{
+		return this->conjugate() * (1 / this->squaredNorm());
+	}
+
 
 }
 

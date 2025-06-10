@@ -8,6 +8,12 @@ namespace Graphics {
 	class Quaternion;
 	class Transforms;
 
+	enum class QuaternionType 
+	{
+		FROM_COMPONENTS,   
+		FROM_AXIS_ANGLE    
+	};
+
 	typedef float Scalar;	
 
 	void test();
@@ -75,9 +81,8 @@ namespace Graphics {
 		Vector3D dir;
 	};
 
-
-	Quaternion operator*(const Quaternion& quaternion1, const Quaternion& quaternion2);
-
+	Quaternion operator*(const Scalar& k, const Quaternion& quat);
+	Quaternion operator*(const Quaternion& quat, const Scalar& k);
 	/*
 	In matematica, i quaternioni sono entità introdotte da William Rowan Hamilton nel 1843 come estensioni dei numeri complessi.
 	
@@ -87,6 +92,9 @@ namespace Graphics {
 	
 	Re(Quaternion) = d
 	Im(Quaternion) = ai + bj + ck
+
+	Un quaterniore rappresenta una rotazione intorno all'asse definito dal vettore img moltiplicato per seno di alpha/2, dove alpha è l'angolo di rotazione. Il valore re rappresenta il coseno di alpha/2.
+	q = sin(alpha/2) * img + cos(alpha/2) * re
 	*/
 	class Quaternion {
 
@@ -94,18 +102,21 @@ namespace Graphics {
 		Vector3D img;
 		Scalar re;
 
+		bool isRotation();
+
 	public:
 		static const Quaternion IDENTITY;
 		static const Quaternion ZERO;
 
-
 		Quaternion();
-		Quaternion(Vector3D img, Scalar re);
-		Quaternion(Scalar imgX, Scalar imgY, Scalar imgZ, Scalar re);
+		Quaternion(Scalar imgX, Scalar imgY, Scalar imgZ, Scalar re); 
+		Quaternion(Vector3D vector, Scalar scalar, QuaternionType type);
 		
 		Quaternion operator+(const Quaternion& other);
 		Quaternion operator-(const Quaternion& other);
+
 		bool operator==(const Quaternion& other);
+		Quaternion operator*(const Quaternion& other);
 
 		Scalar getRe() const { return re; }
 		Vector3D getImg() const { return img; }
@@ -114,11 +125,12 @@ namespace Graphics {
 		void setImg(Vector3D newImg) { img = newImg; }
 
 		Quaternion conjugate();
-		Vector3D rotate(const Vector3D& vector);
-
 		Scalar squaredNorm();
 		Scalar norm();
+		Quaternion inverse();
 		Quaternion normalize();
+
+		Vector3D rotate(const Vector3D& vector);
 	
 	};
 
