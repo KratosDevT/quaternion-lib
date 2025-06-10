@@ -115,6 +115,10 @@ namespace Graphics {
 
 		Quaternion conjugate();
 		Vector3D rotate(const Vector3D& vector);
+
+		Scalar squaredNorm();
+		Scalar norm();
+		Quaternion normalize();
 	
 	};
 

@@ -144,12 +144,14 @@ namespace Graphics
 		return (this->getRe() == other.getRe()) && (this->getImg()==other.getImg());
 	}
 
+	Quaternion Quaternion::operator+(const Quaternion& other) 
+	{
+		return Quaternion(other.getImg().getX()+img.getX(), other.getImg().getY()+img.getY(), other.getImg().getZ()+img.getZ(), other.getRe()+re);
+	}
+
 	Quaternion Quaternion::conjugate() 
 	{
-		img.setX(-img.getX());
-		img.setY(-img.getY());
-		img.setZ(-img.getZ());
-		return *this;
+		return Quaternion(-img.getX(), -img.getY(), -img.getZ(), re);
 	}
 
 	Quaternion operator*(const Quaternion& quaternion1, const Quaternion& quaternion2) 
@@ -157,6 +159,16 @@ namespace Graphics
 		Scalar _re = (quaternion1.getRe() * quaternion2.getRe()) - dot(quaternion1.getImg(), quaternion2.getImg());
 		Vector3D _img = (quaternion1.getRe() * quaternion2.getImg()) + (quaternion2.getRe() * quaternion1.getImg()) + cross(quaternion1.getImg(), quaternion2.getImg());
 		return Quaternion(_img, _re);
+	}
+
+	Scalar Quaternion::norm() 
+	{
+		return std::sqrt(this->squaredNorm());
+	}
+
+	Scalar Quaternion::squaredNorm() 
+	{
+		return (this->getRe() * this->getRe()) + this->getImg().squaredNorm();
 	}
 
 }

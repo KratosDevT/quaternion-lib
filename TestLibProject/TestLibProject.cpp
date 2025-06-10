@@ -16,23 +16,54 @@ void customAssert(bool condition, const std::string& testName) {
         assert(false);
     }
 }
+void TestQuaternionClass();
+void TestVectorClass();
 
 int main()
 {
-    //TestsVectorImpl();
-    Graphics::Quaternion quaternion = Graphics::Quaternion(1, 2, 3, 4);
-    printQuaternion(quaternion);
-
-	Graphics::Vector3D vector = Graphics::Vector3D(-1, -2, -3);
-    Graphics::Quaternion quaternion2 = Graphics::Quaternion(vector, 4);
-    customAssert(quaternion.conjugate() == quaternion2, "coniugato");
-
-	Graphics::Quaternion quaternion3 = quaternion2 * Graphics::Quaternion::IDENTITY;
-    customAssert(quaternion3 == quaternion2, "prodotto per identita");
-    
+    //TestVectorClass();
+    TestQuaternionClass();    
 }
 
-void TestsVectorImpl()
+
+void TestQuaternionClass() 
+{
+    Graphics::Quaternion quaternion = Graphics::Quaternion(1, 1, 2, 3);
+    std::cout << "Quaternione: ";
+    printQuaternion(quaternion);
+    std::cout << std::endl;
+
+    std::cout << "norma quadra: " << quaternion.squaredNorm() << std::endl;
+    customAssert(quaternion.squaredNorm() == 15, "norma quadra");
+    std::cout << std::endl;
+
+    std::cout << "norma: " << quaternion.norm() << std::endl;
+    customAssert((quaternion.norm() - std::sqrt(15)) < FLT_EPSILON, "norma");
+    std::cout << std::endl;
+
+    Graphics::Vector3D vector = Graphics::Vector3D(-1, -1, -2);
+    Graphics::Quaternion quaternion2 = Graphics::Quaternion(vector, 3);
+    std::cout << "coniugato: ";
+    printQuaternion(quaternion.conjugate());
+    customAssert(quaternion.conjugate() == quaternion2, "coniugato");
+    std::cout << std::endl;
+
+    Graphics::Quaternion quaternion3 = quaternion * Graphics::Quaternion::IDENTITY;
+    std::cout << "prodotto per identita: ";
+    printQuaternion(quaternion3);
+    customAssert(quaternion3 == quaternion, "prodotto per identita");
+    std::cout << std::endl;
+
+    Graphics::Quaternion sumquat = quaternion + quaternion.conjugate();
+    std::cout << "somma coniugato: ";
+    printQuaternion(sumquat);
+    customAssert(sumquat.getRe() == 2 * quaternion.getRe(), "somma coniugato, parte reale");
+    customAssert(sumquat.getImg() == Graphics::Vector3D::ORIGIN, "somma coniugato, parte immaginaria");
+    std::cout << std::endl;
+
+}
+
+void TestVectorClass()
 {
     Graphics::Vector3D vec1 = Graphics::Vector3D::RIGHT;
     Graphics::Vector3D vec2 = Graphics::Vector3D::UP;
