@@ -126,15 +126,38 @@ namespace Graphics
 	Ray::Ray(){}
 	Ray::Ray(Vector3D vec1, Vector3D vec2) : start{ vec1 }, dir{ vec2 }	{}
 
+	const Quaternion Quaternion::IDENTITY{ 0, 0, 0, 1 };
+	const Quaternion Quaternion::ZERO{ 0, 0, 0, 0 };
 
 	void printQuaternion(const Quaternion& quaternion)
 	{
-		std::cout << "[" << quaternion.getImg().getX() << "i, " << quaternion.getImg().getY() << "j, " << quaternion.getImg().getZ() << "k, " << quaternion.getRe() << "]" << std::endl;
+		std::cout << "[" << quaternion.getImg().getX() << ", " << quaternion.getImg().getY() << ", " << quaternion.getImg().getZ() << ", " << quaternion.getRe() << "] -> ";
+		std::cout << "[" << quaternion.getImg().getX() << "i+" << quaternion.getImg().getY() << "j+" << quaternion.getImg().getZ() << "k+" << quaternion.getRe() << "]" << std::endl;
 	}
 
 	Quaternion::Quaternion() : img{ Vector3D::ORIGIN }, re{ 0 } {}
 	Quaternion::Quaternion(Vector3D _img, Scalar _re) : img{ _img }, re{ _re } {}
 	Quaternion::Quaternion(Scalar _x, Scalar _y, Scalar _z, Scalar _re) : img{ Vector3D(_x, _y, _z) }, re{ _re } {}
+
+	bool Quaternion::operator==(const Quaternion& other)
+	{
+		return (this->getRe() == other.getRe()) && (this->getImg()==other.getImg());
+	}
+
+	Quaternion Quaternion::conjugate() 
+	{
+		img.setX(-img.getX());
+		img.setY(-img.getY());
+		img.setZ(-img.getZ());
+		return *this;
+	}
+
+	Quaternion operator*(const Quaternion& quaternion1, const Quaternion& quaternion2) 
+	{
+		Scalar _re = (quaternion1.getRe() * quaternion2.getRe()) - dot(quaternion1.getImg(), quaternion2.getImg());
+		Vector3D _img = (quaternion1.getRe() * quaternion2.getImg()) + (quaternion2.getRe() * quaternion1.getImg()) + cross(quaternion1.getImg(), quaternion2.getImg());
+		return Quaternion(_img, _re);
+	}
 
 }
 

@@ -1,4 +1,4 @@
-// TestLibProject.cpp : This file contains the 'main' function. Program execution begins and ends there.
+﻿// TestLibProject.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
 #include <iostream>
@@ -6,12 +6,29 @@
 #include <assert.h>
 #include "TestLibProject.h"
 
+
+void customAssert(bool condition, const std::string& testName) {
+    if (condition) {
+        std::cout << "TEST PASS: " << testName << std::endl;
+    }
+    else {
+        std::cout << "TEST FAIL: " << testName << std::endl;
+        assert(false);
+    }
+}
+
 int main()
 {
     //TestsVectorImpl();
     Graphics::Quaternion quaternion = Graphics::Quaternion(1, 2, 3, 4);
     printQuaternion(quaternion);
-    
+
+	Graphics::Vector3D vector = Graphics::Vector3D(-1, -2, -3);
+    Graphics::Quaternion quaternion2 = Graphics::Quaternion(vector, 4);
+    customAssert(quaternion.conjugate() == quaternion2, "coniugato");
+
+	Graphics::Quaternion quaternion3 = quaternion2 * Graphics::Quaternion::IDENTITY;
+    customAssert(quaternion3 == quaternion2, "prodotto per identita");
     
 }
 

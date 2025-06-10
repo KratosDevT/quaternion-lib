@@ -75,6 +75,9 @@ namespace Graphics {
 		Vector3D dir;
 	};
 
+
+	Quaternion operator*(const Quaternion& quaternion1, const Quaternion& quaternion2);
+
 	/*
 	In matematica, i quaternioni sono entità introdotte da William Rowan Hamilton nel 1843 come estensioni dei numeri complessi.
 	
@@ -92,15 +95,18 @@ namespace Graphics {
 		Scalar re;
 
 	public:
+		static const Quaternion IDENTITY;
+		static const Quaternion ZERO;
+
+
 		Quaternion();
 		Quaternion(Vector3D img, Scalar re);
 		Quaternion(Scalar imgX, Scalar imgY, Scalar imgZ, Scalar re);
 		
-
-		Quaternion operator*(const Quaternion& other);
 		Quaternion operator+(const Quaternion& other);
 		Quaternion operator-(const Quaternion& other);
-		
+		bool operator==(const Quaternion& other);
+
 		Scalar getRe() const { return re; }
 		Vector3D getImg() const { return img; }
 		
