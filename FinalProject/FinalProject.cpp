@@ -100,12 +100,12 @@ namespace Graphics
 		return G + (k * d);
 	}
 
-	Scalar Vector3D::squaredNorm()
+	Scalar Vector3D::squaredNorm() const
 	{
 		return dot(*this, *this);
 	}
 
-	Scalar Vector3D::norm()
+	Scalar Vector3D::norm() const
 	{
 		return std::sqrt(Vector3D::squaredNorm());
 	}
@@ -168,6 +168,29 @@ namespace Graphics
 				std::cerr << "Invalid QuaternionType provided." << std::endl;
 		}
     }
+
+	Quaternion::Quaternion(Scalar roll, Scalar pitch, Scalar yaw)
+	{
+		// roll is rotation around x-axis, pitch around y-axis, yaw around z-axis
+		// Convert Euler angles (roll, pitch, yaw) to quaternion
+		Scalar cy = std::cos(yaw * 0.5f);
+		Scalar sy = std::sin(yaw * 0.5f);
+		Scalar cp = std::cos(pitch * 0.5f);
+		Scalar sp = std::sin(pitch * 0.5f);
+
+		Scalar cr = std::cos(roll * 0.5f);
+		Scalar sr = std::sin(roll * 0.5f);
+		re = cr * cp * cy + sr * sp * sy;
+		img = Vector3D(
+			sr * cp * cy - cr * sp * sy,
+			cr * sp * cy + sr * cp * sy,
+			cr * cp * sy - sr * sp * cy
+		);
+	}
+
+	Quaternion::Quaternion(Matrix4D rotationMatrix)
+	{
+	}
 
 	Quaternion operator*(const Scalar& value, const Quaternion& quat)
 	{
@@ -241,7 +264,7 @@ namespace Graphics
 		{
 			quaternion3.flip();
 		}
-		Scalar theta = std::acos(dot(quaternion1, quaternion2));// the angle between the two quaternions
+		Scalar theta = std::acos(dot(quaternion1, quaternion2));
 		Quaternion result = (std::sin((1 - interpolationValue) * theta) / sin(theta)) * quaternion1 + (sin(interpolationValue * theta) / sin(theta)) * quaternion3;
 		return result;
 	}
@@ -290,8 +313,8 @@ namespace Graphics
 			this->Quaternion::ZERO;
 		}
 
-		this->setImg(this->getImg() * (1 / norm));
-		this->setRe(this->getRe() * (1 / norm));
+		this->setImg(this->getImg() * (1.0f / norm));
+		this->setRe(this->getRe() * (1.0f / norm));
 	}
 
 	void Quaternion::flip()
@@ -338,13 +361,17 @@ namespace Graphics
 			Quaternion q_vector(vector.getX(), vector.getY(), vector.getZ(), 0);
 			//std::cout << "q_vector: ";
 			//printQuaternion(q_vector);
-			Quaternion q_conjugate = this->conjugated();
+			Quaternion q_this = *this;
+			q_this.normalize();
+			Quaternion q_conjugate = q_this.conjugated();
 			//std::cout << "q_conjugate: ";
 			//printQuaternion(q_conjugate);
-			Quaternion result = cleanQuaternion((*this * q_vector) * q_conjugate);
+			Quaternion result = cleanQuaternion(q_this * q_vector * q_conjugate);
 			//std::cout << "result: ";
 			//printQuaternion(result);
 			assert(std::abs(result.getRe() - 0.0f) < FLT_EPSILON);
+			assert(result.getImg().squaredNorm() >= 0.0f);
+			assert(result.getImg().squaredNorm() - vector.squaredNorm() <= 0.000001f);
 			return result.getImg();
 		}
 		else

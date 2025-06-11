@@ -7,6 +7,7 @@ namespace Graphics {
 	class Ray;
 	class Quaternion;
 	class Transforms;
+	class Matrix4D;
 
 	enum class QuaternionType 
 	{
@@ -53,8 +54,8 @@ namespace Graphics {
 		Vector3D();
 		Vector3D(Scalar x, Scalar y, Scalar z);
 
-		Scalar squaredNorm();
-		Scalar norm();
+		Scalar squaredNorm() const;
+		Scalar norm() const;
 		Vector3D normalize();
 
 		//getters and setters
@@ -81,6 +82,26 @@ namespace Graphics {
 		Ray(Vector3D vec1, Vector3D vec2);
 		Vector3D start;
 		Vector3D dir;
+	};
+
+	class Matrix4D 
+	{
+		public:
+		Scalar m[4][4];
+		Matrix4D();
+		Matrix4D(Scalar m00, Scalar m01, Scalar m02, Scalar m03,
+				 Scalar m10, Scalar m11, Scalar m12, Scalar m13,
+				 Scalar m20, Scalar m21, Scalar m22, Scalar m23,
+				 Scalar m30, Scalar m31, Scalar m32, Scalar m33);
+
+		Matrix4D operator*(const Matrix4D& other) const;
+		Vector3D operator*(const Vector3D& vector) const;
+
+		static Matrix4D identity();
+		static Matrix4D translation(const Vector3D& translation);
+		static Matrix4D rotation(const Quaternion& quaternion);
+		static Matrix4D scale(const Vector3D& scale);
+
 	};
 
 
@@ -128,7 +149,9 @@ namespace Graphics {
 		Quaternion();
 		Quaternion(Scalar imgX, Scalar imgY, Scalar imgZ, Scalar re); 
 		Quaternion(Vector3D vector, Scalar scalar, QuaternionType type);
-		
+		Quaternion(Scalar roll, Scalar pitch, Scalar yaw);
+		Quaternion(Matrix4D rotationMatrix);
+
 		Scalar squaredNorm() const;
 		Scalar norm() const;
 		Quaternion normalized();
