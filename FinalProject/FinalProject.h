@@ -26,6 +26,7 @@ namespace Graphics {
 	
 	void printVector3D(const Vector3D& vector);
 	void printQuaternion(const Quaternion& quaternion);
+	void printQuaternionAxisAndAngle(const Quaternion& quaternion);
 
 	Scalar dot(const Vector3D& vec1, const Vector3D& vec2);
 	Vector3D cross(const Vector3D& vec1, const Vector3D& vec2);
@@ -56,6 +57,7 @@ namespace Graphics {
 		Scalar norm();
 		Vector3D normalize();
 
+		//getters and setters
 		Scalar getX() const { return x; }
 		Scalar getY() const { return y; }
 		Scalar getZ() const { return z; }
@@ -81,27 +83,42 @@ namespace Graphics {
 		Vector3D dir;
 	};
 
+
+	// Quaternion
 	Quaternion operator*(const Scalar& k, const Quaternion& quat);
 	Quaternion operator*(const Quaternion& quat, const Scalar& k);
+
+	Quaternion operator+(const Quaternion& quaternion1, const Quaternion& quaternion2);
+	Quaternion operator-(const Quaternion& quaternion1, const Quaternion& quaternion2);
+	Quaternion operator*(const Quaternion& quaternion1, const Quaternion& quaternion2);
+
+	bool operator==(const Quaternion& quaternion1, const Quaternion& quaternion2);
+
+	Scalar dot(const Quaternion& quaternion1, const Quaternion& quaternion2);
+
+	// value = 0.0f -> quaternion1, value = 1.0f -> quaternion2
+	Quaternion nlerp(const Quaternion& quaternion1, const Quaternion& quaternion2, Scalar value);
+	Quaternion slerp(const Quaternion& quaternion1, const Quaternion& quaternion2, Scalar value);
+
+	bool areEqual(const Quaternion& quaternion1, const Quaternion& quaternion2);
+
+	
 	/*
-	In matematica, i quaternioni sono entità introdotte da William Rowan Hamilton nel 1843 come estensioni dei numeri complessi.
-	
+	In matematica, i quaternioni sono entità introdotte da William Rowan Hamilton nel 1843 come estensioni dei numeri complessi. Ipercomplessi, spazio H.
 	Un quaternione è un oggetto formale del tipo:
-	
 	Quaternion = ai + bj + ck + d, dove a,b,c,d sono numeri reali e i,j,k sono dei simboli che si comportano in modo simile all'unità immaginaria dei numeri complessi.
-	
 	Re(Quaternion) = d
 	Im(Quaternion) = ai + bj + ck
-
-	Un quaterniore rappresenta una rotazione intorno all'asse definito dal vettore img moltiplicato per seno di alpha/2, dove alpha è l'angolo di rotazione. Il valore re rappresenta il coseno di alpha/2.
-	q = sin(alpha/2) * img + cos(alpha/2) * re
+	
+	Un quaterniore a norma 1 rappresenta una rotazione intorno all'asse definito dal vettore img moltiplicato per seno di alpha/2, dove alpha è l'angolo di rotazione. Il valore re rappresenta il coseno di alpha/2.
+	q = sin(alpha/2) * axis + cos(alpha/2)
+	Questa sarebbe la trasformazione da asse angolo a quaternione.
 	*/
 	class Quaternion {
 
 	private:
 		Vector3D img;
 		Scalar re;
-
 		bool isRotation();
 
 	public:
@@ -112,25 +129,26 @@ namespace Graphics {
 		Quaternion(Scalar imgX, Scalar imgY, Scalar imgZ, Scalar re); 
 		Quaternion(Vector3D vector, Scalar scalar, QuaternionType type);
 		
-		Quaternion operator+(const Quaternion& other);
-		Quaternion operator-(const Quaternion& other);
+		Scalar squaredNorm() const;
+		Scalar norm() const;
+		Quaternion normalized();
+		void normalize();
+		void flip();
 
-		bool operator==(const Quaternion& other);
-		Quaternion operator*(const Quaternion& other);
-
-		Scalar getRe() const { return re; }
-		Vector3D getImg() const { return img; }
-		
-		void setRe(Scalar newRe) { re = newRe; }
-		void setImg(Vector3D newImg) { img = newImg; }
-
-		Quaternion conjugate();
-		Scalar squaredNorm();
-		Scalar norm();
+		Quaternion conjugated(); // return a new quaternion with the imaginary part negated
+		void conjugate(); // set the imaginary part negated of this quaternion
 		Quaternion inverse();
-		Quaternion normalize();
 
 		Vector3D rotate(const Vector3D& vector);
+
+		Vector3D getAxis() const;
+		Scalar getAngle() const;
+
+		// Getters and Setters
+		Scalar getRe() const { return re; }
+		Vector3D getImg() const { return img; }
+		void setRe(Scalar newRe) { re = newRe; }
+		void setImg(Vector3D newImg) { img = newImg; }
 	
 	};
 

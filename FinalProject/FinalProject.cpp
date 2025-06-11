@@ -5,9 +5,11 @@
 #include "framework.h"
 #include "FinalProject.h"
 #include <iostream>
+#include <cassert>
 
 namespace Graphics
 {
+	float cleanFloat(float value);
 	const Vector3D Vector3D::ORIGIN{ 0, 0, 0 };
 
 	/// <summary>Zero vector representing origin point (0, 0, 0)</summary>
@@ -51,18 +53,14 @@ namespace Graphics
 
 	bool operator==(const Vector3D& vector1, const Vector3D& vector2)
 	{
-		return (std::abs(vector1.getX() - vector2.getX()) < FLT_EPSILON) && ((vector1.getY() - vector2.getY()) < FLT_EPSILON) && ((vector1.getZ() - vector2.getZ()) < FLT_EPSILON);
+		return (std::abs(vector1.getX() - vector2.getX()) < FLT_EPSILON) && (std::abs(vector1.getY() - vector2.getY()) < FLT_EPSILON) && (std::abs(vector1.getZ() - vector2.getZ()) < FLT_EPSILON);
 	}
-
-	
 
 	//print
 	void printVector3D(const Vector3D& vector)
 	{
-		std::cout << "[" << vector.getX() << "," << vector.getY() << "," << vector.getZ() << "]" << std::endl;
+		std::cout << "[" << vector.getX() << "," << vector.getY() << "," << vector.getZ() << "]";
 	}
-
-
 
 	Scalar dot(const Vector3D& vec1, const Vector3D& vec2)
 	{
@@ -80,8 +78,6 @@ namespace Graphics
 	{
 		return Scalar();
 	}
-
-
 
 	Vector3D intersect(const Ray& ray, const Sphere& sphere)
 	{
@@ -116,6 +112,11 @@ namespace Graphics
 
 	Vector3D Vector3D::normalize()
 	{
+		Scalar n = norm();
+		if (std::abs(n - 0.0f) < FLT_EPSILON)
+		{
+			return Vector3D::ORIGIN; // Return zero vector if norm is zero
+		}
 		return *this * (1/norm());
 	}
 
@@ -131,10 +132,21 @@ namespace Graphics
 		std::cout << "[" << quaternion.getImg().getX() << "i+" << quaternion.getImg().getY() << "j+" << quaternion.getImg().getZ() << "k+" << quaternion.getRe() << "]" << std::endl;
 	}
 
+	void printQuaternionAxisAndAngle(const Quaternion& quaternion)
+	{
+		Vector3D axis = quaternion.getAxis();
+		Scalar angle = quaternion.getAngle();
+
+		std::cout << "[ Axis: ";
+		printVector3D(axis);
+		std::cout << ", Angle: " << angle << " ]";
+		std::cout << std::endl;
+	}
+
 	Quaternion::Quaternion() : img{ Vector3D::ORIGIN }, re{ 0 } {}
 	Quaternion::Quaternion(Scalar _x, Scalar _y, Scalar _z, Scalar _re) : img{ Vector3D(_x, _y, _z) }, re{ _re } {}
 
-    Quaternion::Quaternion(Vector3D vector, Scalar scalar, QuaternionType type) : re(0)
+    Quaternion::Quaternion(Vector3D vector, Scalar scalar, QuaternionType type)
     {
 		switch(type) 
 		{
@@ -146,31 +158,16 @@ namespace Graphics
 
 			case QuaternionType::FROM_AXIS_ANGLE:
 				//std::cout << "QuaternionType Asse angolo" << std::endl;
-				img = vector.normalize() * std::sin(scalar / 2.0f);
-				re = std::cos(scalar / 2.0f);
+				img = vector.normalize() * cleanFloat(std::sin(scalar / 2.0f));
+				re = cleanFloat(std::cos(scalar / 2.0f));
 				break;
 
 			default:
+				re = 0;
+				img = Vector3D::ORIGIN;
 				std::cerr << "Invalid QuaternionType provided." << std::endl;
 		}
     }
-
-	bool Quaternion::operator==(const Quaternion& other)
-	{
-		return (this->getRe() == other.getRe()) && (this->getImg()==other.getImg());
-	}
-
-	Quaternion Quaternion::operator+(const Quaternion& other) 
-	{
-		return Quaternion(other.getImg().getX()+img.getX(), other.getImg().getY()+img.getY(), other.getImg().getZ()+img.getZ(), other.getRe()+re);
-	}
-	
-	Quaternion Quaternion::operator*(const Quaternion& other)
-	{
-		Scalar _re = (this->getRe() * other.getRe()) - dot(this->getImg(), other.getImg());
-		Vector3D _img = (this->getRe() * other.getImg()) + (other.getRe() * this->getImg()) + cross(this->getImg(), other.getImg());
-		return Quaternion(_img, _re, QuaternionType::FROM_COMPONENTS);
-	}
 
 	Quaternion operator*(const Scalar& value, const Quaternion& quat)
 	{
@@ -182,40 +179,130 @@ namespace Graphics
 		return value * quat;
 	}
 
-	Quaternion Quaternion::operator-(const Quaternion& other)
+	Quaternion operator+(const Quaternion& quaternion1, const Quaternion& quaternion2)
 	{
-		return Quaternion(img.getX() - other.getImg().getX() , img.getY() - other.getImg().getY() , img.getZ() - other.getImg().getZ() , re - other.getRe());
+		return Quaternion(
+			quaternion1.getImg().getX() + quaternion2.getImg().getX(), 
+			quaternion1.getImg().getY() + quaternion2.getImg().getY(), 
+			quaternion1.getImg().getZ() + quaternion2.getImg().getZ(),
+			quaternion1.getRe() + quaternion2.getRe()
+		);
 	}
 
-	Quaternion Quaternion::conjugate()
+	Quaternion operator-(const Quaternion& quaternion1, const Quaternion& quaternion2)
+	{
+		return Quaternion(
+			quaternion1.getImg().getX() - quaternion2.getImg().getX(),
+			quaternion1.getImg().getY() - quaternion2.getImg().getY(),
+			quaternion1.getImg().getZ() - quaternion2.getImg().getZ(),
+			quaternion1.getRe() - quaternion2.getRe()
+		);
+	}
+
+	Quaternion operator*(const Quaternion& quaternion1, const Quaternion& quaternion2)
+	{
+		Scalar _re = dot(quaternion1, quaternion2);
+		Vector3D _img = (quaternion1.getRe() * quaternion2.getImg()) + (quaternion2.getRe() * quaternion1.getImg()) + cross(quaternion1.getImg(), quaternion2.getImg());
+		return Quaternion(_img, _re, QuaternionType::FROM_COMPONENTS);
+	}
+
+	bool operator==(const Quaternion& quaternion1, const Quaternion& quaternion2)
+	{
+		return (quaternion1.getRe() == quaternion2.getRe()) && (quaternion1.getImg() == quaternion2.getImg());
+	}
+
+	Scalar dot(const Quaternion& quaternion1, const Quaternion& quaternion2)
+	{
+		return (quaternion1.getRe() * quaternion2.getRe()) - dot(quaternion1.getImg(), quaternion2.getImg());
+	}
+
+	//The normalized linear interpolation of two quaternions.
+	Quaternion nlerp(const Quaternion& quaternion1, const Quaternion& quaternion2, Scalar interpolationValue)
+	{
+		assert(interpolationValue >= 0 || interpolationValue <= 1);
+		Quaternion quaternion3 = quaternion2;
+		if (dot(quaternion1, quaternion2) < 0) 
+		{
+			quaternion3.flip();
+		}
+		Quaternion result = ((1 - interpolationValue) * quaternion1) + (interpolationValue * quaternion3);
+		/*std::cout << "nlerp result: ";
+		printQuaternion(result);*/
+		result.normalize();
+		return result;
+	}
+
+	//The spherical linear interpolation of two quaternions.
+	Quaternion slerp(const Quaternion& quaternion1, const Quaternion& quaternion2, Scalar interpolationValue)
+	{
+		assert(interpolationValue >= 0 || interpolationValue <= 1);
+		Quaternion quaternion3 = quaternion2;
+		if (dot(quaternion1, quaternion2) < 0)
+		{
+			quaternion3.flip();
+		}
+		Scalar theta = std::acos(dot(quaternion1, quaternion2));// the angle between the two quaternions
+		Quaternion result = (std::sin((1 - interpolationValue) * theta) / sin(theta)) * quaternion1 + (sin(interpolationValue * theta) / sin(theta)) * quaternion3;
+		return result;
+	}
+
+	bool areEqual(const Quaternion& quaternion1, const Quaternion& quaternion2)
+	{
+		return (quaternion1 == quaternion2);
+	}
+	
+
+	Quaternion Quaternion::conjugated()
 	{
 		return Quaternion(-img.getX(), -img.getY(), -img.getZ(), re);
 	}
 
-	Scalar Quaternion::norm() 
+	void Quaternion::conjugate()
+	{
+		this->setImg(-1 * this->getImg());
+	}
+
+	Scalar Quaternion::norm() const
 	{
 		return std::sqrt(this->squaredNorm());
 	}
 
-	Scalar Quaternion::squaredNorm() 
+	Scalar Quaternion::squaredNorm() const
 	{
 		return (this->getRe() * this->getRe()) + this->getImg().squaredNorm();
 	}
 
-	Quaternion Quaternion::normalize() 
+	Quaternion Quaternion::normalized() 
 	{
 		Scalar norm = this->norm();
-		if (norm - 0.0f < FLT_EPSILON)
+		if (std::abs(norm - 0.0f) < FLT_EPSILON)
 		{
 			return Quaternion::ZERO;
 		}
-
 		return Quaternion(this->getImg() * (1/norm), this->getRe() / norm, QuaternionType::FROM_COMPONENTS);
+	}
+
+	void Quaternion::normalize()
+	{
+		Scalar norm = this->norm();
+		if (std::abs(norm - 0.0f) < FLT_EPSILON)
+		{
+			this->Quaternion::ZERO;
+		}
+
+		this->setImg(this->getImg() * (1 / norm));
+		this->setRe(this->getRe() * (1 / norm));
+	}
+
+	void Quaternion::flip()
+	{
+		this->setImg(-1 * this->getImg());
+		this->setRe(-1 * this->getRe());
 	}
 
 	bool Quaternion::isRotation()
 	{
-		if ((this->squaredNorm() - 1.0f) < FLT_EPSILON)
+		if (this->squaredNorm() - 1.0f < FLT_EPSILON)
 		{
 			return true;
 		}
@@ -226,7 +313,8 @@ namespace Graphics
 
 	}
 
-	float cleanFloat(float value) {
+	float cleanFloat(float value) 
+	{
 		if (std::abs(value) < FLT_EPSILON) {
 			return 0.0f;
 		}
@@ -250,26 +338,41 @@ namespace Graphics
 			Quaternion q_vector(vector.getX(), vector.getY(), vector.getZ(), 0);
 			//std::cout << "q_vector: ";
 			//printQuaternion(q_vector);
-			Quaternion q_conjugate = this->conjugate();
+			Quaternion q_conjugate = this->conjugated();
 			//std::cout << "q_conjugate: ";
 			//printQuaternion(q_conjugate);
 			Quaternion result = cleanQuaternion((*this * q_vector) * q_conjugate);
 			//std::cout << "result: ";
 			//printQuaternion(result);
+			assert(std::abs(result.getRe() - 0.0f) < FLT_EPSILON);
 			return result.getImg();
 		}
 		else
 		{
-			std::cerr << "Quaternion is not a valid rotation quaternion." << std::endl;
+			std::cerr << "Quaternion is not a valid rotation quaternion, squaredNorm: " << this->squaredNorm() << std::endl;
 		}
+	}
+
+	Vector3D Quaternion::getAxis() const
+	{
+		Scalar norm = this->norm();
+		Vector3D axis = this->getImg();
+		axis = axis * (1 / norm);
+		return axis;
+	}
+
+	Scalar Quaternion::getAngle() const
+	{
+		Scalar norm = this->norm();
+		Scalar realPart = this->getRe();
+		Scalar realPartNormalized = realPart * (1 / norm);
+		return 2.0f * std::acos(realPartNormalized);
 	}
 
 	Quaternion Quaternion::inverse() 
 	{
-		return this->conjugate() * (1 / this->squaredNorm());
+		return this->conjugated() * (1 / this->squaredNorm());
 	}
-
-
 }
 
 

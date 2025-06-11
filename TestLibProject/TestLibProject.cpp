@@ -9,6 +9,13 @@
 
 const double PI = 4.0 * atan(1.0);
 
+void TestQuaternionClass(Graphics::Quaternion quaternion, Graphics::Quaternion conjugate, Graphics::Scalar squaredNorm);
+void TestRotazioneAsseAngolo(Graphics::Vector3D& vec);
+void TestRotazioneIdentitaria(Graphics::Vector3D& vec);
+void TestRotazioneSLerp(Graphics::Vector3D& vec2, Graphics::Quaternion& quaternionRotator2, Graphics::Quaternion& quaternionRotator3);
+void TestRotazioneNLerp(Graphics::Vector3D& vec2, Graphics::Quaternion& quaternionRotator2, Graphics::Quaternion& quaternionRotator3);
+void TestVectorClass();
+
 void customAssert(bool condition, const std::string& testName) {
     if (condition) {
         std::cout << "TEST PASS: " << testName << std::endl;
@@ -18,8 +25,6 @@ void customAssert(bool condition, const std::string& testName) {
         assert(false);
     }
 }
-void TestQuaternionClass(Graphics::Quaternion quaternion, Graphics::Quaternion conjugate, Graphics::Scalar squaredNorm);
-void TestVectorClass();
 
 int main()
 {
@@ -29,25 +34,102 @@ int main()
     Graphics::Scalar squaredNorm = 30;
     TestQuaternionClass(quaternion, conjugate, squaredNorm);
 
+    Graphics::Vector3D vec1 = Graphics::Vector3D(-1, 0, 0);
 
-	//test asse angolo
-    Graphics::Vector3D vec = Graphics::Vector3D(1, 1, 0);
+    //test asse angolo
+    TestRotazioneAsseAngolo(vec1);
+    TestRotazioneIdentitaria(vec1);
 
-    Graphics::Vector3D axis = Graphics::Vector3D(1, -1, 0);
-    Graphics::Scalar angle = PI / 2; // Angolo in rad
-	//std::cout << "pigreco mezzi 1,57: " << angle << std::endl;
+    Graphics::Vector3D vec2 = Graphics::Vector3D(-1, 1, 0);
+
+    Graphics::Vector3D axis = Graphics::Vector3D(1, 0, 0);
+    Graphics::Scalar angle = PI;
+    Graphics::Quaternion quaternionRotator1 = Graphics::Quaternion(axis, angle, Graphics::QuaternionType::FROM_AXIS_ANGLE);
+
+    Graphics::Vector3D axis2 = Graphics::Vector3D(0, 1, 0);
+    Graphics::Scalar angle2 = PI;
+    Graphics::Quaternion quaternionRotator2 = Graphics::Quaternion(axis2, angle2, Graphics::QuaternionType::FROM_AXIS_ANGLE);
+
+    TestRotazioneNLerp(vec2, quaternionRotator1, quaternionRotator2);
+    TestRotazioneSLerp(vec2, quaternionRotator1, quaternionRotator2);
+}
+
+void TestRotazioneSLerp(Graphics::Vector3D& vec2,Graphics::Quaternion& quaternionRotator2, Graphics::Quaternion& quaternionRotator3)
+{
+    std::cout << "INTERPOLAZIONE SLERP";
+    std::cout << std::endl;
+    Graphics::Quaternion quatSlerp = Graphics::slerp(quaternionRotator2, quaternionRotator3, 0.5f);
+
+    printQuaternion(quatSlerp);
+    printQuaternionAxisAndAngle(quatSlerp);
+
+    Graphics::Vector3D rotated3 = quatSlerp.rotate(vec2);
+    std::cout << "vettore: ";
+    printVector3D(vec2);
+    std::cout << "vettore ruotato con quaternione interpolato slerp: ";
+    printVector3D(rotated3);
+    std::cout << std::endl;
+    std::cout << std::endl;
+}
+
+void TestRotazioneNLerp(Graphics::Vector3D& vec2, Graphics::Quaternion& quaternionRotator2, Graphics::Quaternion& quaternionRotator3)
+{
+    std::cout << "INTERPOLAZIONE NLERP";
+    std::cout << std::endl;
+    Graphics::Quaternion quatNlerp = Graphics::nlerp(quaternionRotator2, quaternionRotator3, 0.5f);
+
+    printQuaternion(quatNlerp);
+    printQuaternionAxisAndAngle(quatNlerp);
+
+    std::cout << "norma quatNlerp:";
+    std::cout << quatNlerp.norm() << std::endl;
+    Graphics::Vector3D rotated2 = quatNlerp.rotate(vec2);
+    std::cout << "vettore: ";
+    printVector3D(vec2);
+    std::cout << "vettore ruotato con quaternione interpolato nlerp: ";
+    printVector3D(rotated2);
+    std::cout << std::endl;
+    std::cout << std::endl;
+}
+
+void TestRotazioneIdentitaria(Graphics::Vector3D& vec)
+{
+    std::cout << "ROTAZIONE IDENTITARIA";
+    std::cout << std::endl;
+    std::cout << "vettore: ";
+    printVector3D(vec);
+
+    Graphics::Vector3D axis2 = Graphics::Vector3D(0, 0, 0);
+    Graphics::Scalar angle2 = 0.0f;
+    Graphics::Quaternion quaternionRotator2 = Graphics::Quaternion(axis2, angle2, Graphics::QuaternionType::FROM_AXIS_ANGLE);
+
+    printQuaternion(quaternionRotator2);
+    printQuaternionAxisAndAngle(quaternionRotator2);
+    Graphics::Vector3D rotated2 = quaternionRotator2.rotate(vec);
+    std::cout << "vettore ruotato con identita: ";
+    printVector3D(rotated2);
+    std::cout << std::endl;
+    std::cout << std::endl;
+}
+
+void TestRotazioneAsseAngolo(Graphics::Vector3D& vec)
+{
+    std::cout << "Rotazione da Asse Angolo";
+    std::cout << std::endl;
+    Graphics::Vector3D axis = Graphics::Vector3D(0, 1, 0);
+    Graphics::Scalar angle = PI;
     Graphics::Quaternion quaternionRotator = Graphics::Quaternion(axis, angle, Graphics::QuaternionType::FROM_AXIS_ANGLE);
-
-    std::cout << "rotazione vettore: ";
+    std::cout << "rotazione del vettore: ";
     printVector3D(vec);
     std::cout << "con Quaternione: ";
     printQuaternion(quaternionRotator);
-
+    printQuaternionAxisAndAngle(quaternionRotator);
     Graphics::Vector3D rotated = quaternionRotator.rotate(vec);
     std::cout << "vettore ruotato: ";
     printVector3D(rotated);
-    customAssert(rotated == Graphics::Vector3D::FORWARD * std::sqrt(2), "quaternione di rotazione da asse angolo");
-
+    customAssert(rotated == Graphics::Vector3D::RIGHT, "quaternione di rotazione da asse angolo");
+    std::cout << std::endl;
+    std::cout << std::endl;
 }
 
 
@@ -66,13 +148,26 @@ void TestQuaternionClass(Graphics::Quaternion quaternion, Graphics::Quaternion c
     std::cout << std::endl;
 
     std::cout << "normalizzazione: ";
-    printQuaternion(quaternion.normalize()); 
-    customAssert((quaternion.normalize().norm() - 1.0f) < FLT_EPSILON, "normalizzazione");
+    printQuaternion(quaternion.normalized()); 
+    customAssert((quaternion.normalized().norm() - 1.0f) < FLT_EPSILON, "normalizzazione");
     std::cout << std::endl;
 
-    std::cout << "coniugato: ";
-    printQuaternion(quaternion.conjugate());
-    customAssert(quaternion.conjugate() == conjugate, "coniugato");
+    std::cout << "coniugato esterno: ";
+    printQuaternion(quaternion.conjugated());
+    customAssert(quaternion.conjugated() == conjugate, "coniugato esterno");
+    std::cout << std::endl;
+
+    std::cout << "coniugato interno: ";
+    Graphics::Quaternion quat = quaternion;
+    quat.conjugate();
+    
+    customAssert(quat == conjugate, "coniugato interno");
+    std::cout << std::endl;
+
+    std::cout << "verifica norma quadra = quat * coniugato: ";
+    Graphics::Quaternion quatnorm = quaternion * quaternion.conjugated();
+    printQuaternion(quatnorm);
+    customAssert(quaternion.squaredNorm() == quatnorm.getRe(), "norma quadra = quat * coniugato");
     std::cout << std::endl;
 
     Graphics::Quaternion quaternion3 = quaternion * Graphics::Quaternion::IDENTITY;
@@ -87,7 +182,7 @@ void TestQuaternionClass(Graphics::Quaternion quaternion, Graphics::Quaternion c
     customAssert(sumquat == 2 * quaternion, "somma con se stesso");
     std::cout << std::endl;
 
-    Graphics::Quaternion sumconj = quaternion + quaternion.conjugate();
+    Graphics::Quaternion sumconj = quaternion + quaternion.conjugated();
     std::cout << "somma con coniugato: ";
     printQuaternion(sumconj);
     customAssert(sumconj.getRe() == 2 * quaternion.getRe(), "somma con coniugato, parte reale");
@@ -100,7 +195,7 @@ void TestQuaternionClass(Graphics::Quaternion quaternion, Graphics::Quaternion c
     customAssert(diffquat == Graphics::Quaternion::ZERO, "differenza con se stesso");
     std::cout << std::endl;
 
-    Graphics::Quaternion diffconj = quaternion - quaternion.conjugate();
+    Graphics::Quaternion diffconj = quaternion - quaternion.conjugated();
     std::cout << "differenza con coniugato: ";
     printQuaternion(diffconj);
     customAssert(diffconj.getRe() == 0, "differenza con coniugato, parte reale");
@@ -116,16 +211,16 @@ void TestQuaternionClass(Graphics::Quaternion quaternion, Graphics::Quaternion c
     customAssert(prodinverse == Graphics::Quaternion::IDENTITY, "prodotto per inverso");
     std::cout << std::endl;
 
-    
     Graphics::Vector3D vec = Graphics::Vector3D::RIGHT;
     Graphics::Quaternion quaternionRotator = Graphics::Quaternion(0, -std::sqrt(2) / 2, 0, std::sqrt(2) / 2);
     std::cout << "rotazione di [1,0,0] con Quaternione: ";
     printQuaternion(quaternionRotator);
+    printQuaternionAxisAndAngle(quaternionRotator);
     Graphics::Vector3D rotated = quaternionRotator.rotate(vec);
     std::cout << "rotazione risultante: ";
     printVector3D(rotated);
     std::cout << std::endl;
-
+    std::cout << std::endl;
 }
 
 void TestVectorClass()
@@ -137,12 +232,12 @@ void TestVectorClass()
     Graphics::Scalar dottest = 0;
     Graphics::Vector3D crosstest(0, 0, 1);
 
-    assert((vec1 + vec2) == sumtest);
-    assert((dot(vec1, vec2) - dottest) <= FLT_EPSILON);
-    assert(cross(vec1, vec2) == crosstest);
-    assert(dot(vec1, vec1) == vec1.squaredNorm());
+    customAssert((vec1 + vec2) == sumtest, "somma vettori");
+    customAssert((dot(vec1, vec2) - dottest) <= FLT_EPSILON, "prodotto dot");
+    customAssert(cross(vec1, vec2) == crosstest, "prodotto cross");
+    customAssert(dot(vec1, vec1) == vec1.squaredNorm(), "prodotto dot = norma quadra");
     Graphics::Vector3D versor = (vec1 + vec2).normalize();
-    assert((versor.norm() - 1) <= FLT_EPSILON);
-
+    printVector3D(vec1 + vec2);
+    customAssert((versor.norm() - 1) <= FLT_EPSILON, "normalizzazione vettore");
     printVector3D(versor);
 }
