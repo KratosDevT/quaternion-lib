@@ -9,6 +9,7 @@
 
 namespace Graphics
 {
+	const double PI = 4.0 * atan(1.0);
 	float cleanFloat(float value);
 	const Vector3D Vector3D::ORIGIN{ 0, 0, 0 };
 
@@ -169,23 +170,16 @@ namespace Graphics
 		}
     }
 
-	Quaternion::Quaternion(Scalar roll, Scalar pitch, Scalar yaw)
+	Quaternion::Quaternion(Scalar roll, Scalar pitch, Scalar yaw) // convezione XYZ (roll, pitch, yaw)
 	{
 		// roll is rotation around x-axis, pitch around y-axis, yaw around z-axis
 		// Convert Euler angles (roll, pitch, yaw) to quaternion
-		Scalar cy = std::cos(yaw * 0.5f);
-		Scalar sy = std::sin(yaw * 0.5f);
-		Scalar cp = std::cos(pitch * 0.5f);
-		Scalar sp = std::sin(pitch * 0.5f);
 
-		Scalar cr = std::cos(roll * 0.5f);
-		Scalar sr = std::sin(roll * 0.5f);
-		re = cr * cp * cy + sr * sp * sy;
-		img = Vector3D(
-			sr * cp * cy - cr * sp * sy,
-			cr * sp * cy + sr * cp * sy,
-			cr * cp * sy - sr * sp * cy
-		);
+		re = std::cos(roll / 2.0f) * std::cos(pitch / 2.0f) * std::cos(yaw / 2.0f) - std::sin(roll / 2.0f) * std::sin(pitch / 2.0f) * std::sin(yaw / 2.0f);
+		Scalar x = std::sin(roll / 2.0f) * std::cos(pitch / 2.0f) * std::cos(yaw / 2.0f) + std::cos(roll / 2.0f) * std::sin(pitch / 2.0f) * std::sin(yaw / 2.0f);
+		Scalar y = std::cos(roll / 2.0f) * std::sin(pitch / 2.0f) * std::cos(yaw / 2.0f) - std::sin(roll / 2.0f) * std::cos(pitch / 2.0f) * std::sin(yaw / 2.0f);
+		Scalar z = std::cos(roll / 2.0f) * std::cos(pitch / 2.0f) * std::sin(yaw / 2.0f) + std::sin(roll / 2.0f) * std::sin(pitch / 2.0f) * std::cos(yaw / 2.0f);
+		img = Vector3D(x, y, z);
 	}
 
 	Quaternion::Quaternion(Matrix4D rotationMatrix)
@@ -273,7 +267,6 @@ namespace Graphics
 	{
 		return (quaternion1 == quaternion2);
 	}
-	
 
 	Quaternion Quaternion::conjugated()
 	{
@@ -333,7 +326,6 @@ namespace Graphics
 		{
 			return false;
 		}
-
 	}
 
 	float cleanFloat(float value) 
@@ -382,10 +374,8 @@ namespace Graphics
 
 	Vector3D Quaternion::getAxis() const
 	{
-		Scalar norm = this->norm();
 		Vector3D axis = this->getImg();
-		axis = axis * (1 / norm);
-		return axis;
+		return axis * (1 / axis.norm());
 	}
 
 	Scalar Quaternion::getAngle() const
@@ -393,7 +383,7 @@ namespace Graphics
 		Scalar norm = this->norm();
 		Scalar realPart = this->getRe();
 		Scalar realPartNormalized = realPart * (1 / norm);
-		return 2.0f * std::acos(realPartNormalized);
+		return 2.0f * std::acos(realPartNormalized) * (180 / PI);
 	}
 
 	Quaternion Quaternion::inverse() 
