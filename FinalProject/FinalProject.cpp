@@ -124,6 +124,8 @@ namespace Graphics
 	Ray::Ray(){}
 	Ray::Ray(Vector3D vec1, Vector3D vec2) : start{ vec1 }, dir{ vec2 }	{}
 
+	Matrix3x3::Matrix3x3(Vector3D _firstColumn, Vector3D _secondColumn, Vector3D _thirdColumn) : firstColumn{ _firstColumn }, secondColumn{ _secondColumn }, thirdColumn{ _thirdColumn } {}
+
 	const Quaternion Quaternion::IDENTITY{ 0, 0, 0, 1 };
 	const Quaternion Quaternion::ZERO{ 0, 0, 0, 0 };
 
@@ -180,10 +182,6 @@ namespace Graphics
 		Scalar y = std::cos(roll / 2.0f) * std::sin(pitch / 2.0f) * std::cos(yaw / 2.0f) - std::sin(roll / 2.0f) * std::cos(pitch / 2.0f) * std::sin(yaw / 2.0f);
 		Scalar z = std::cos(roll / 2.0f) * std::cos(pitch / 2.0f) * std::sin(yaw / 2.0f) + std::sin(roll / 2.0f) * std::sin(pitch / 2.0f) * std::cos(yaw / 2.0f);
 		img = Vector3D(x, y, z);
-	}
-
-	Quaternion::Quaternion(Matrix4D rotationMatrix)
-	{
 	}
 
 	Quaternion operator*(const Scalar& value, const Quaternion& quat)

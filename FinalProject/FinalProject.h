@@ -84,24 +84,21 @@ namespace Graphics {
 		Vector3D dir;
 	};
 
-	class Matrix4D 
+	class Matrix3x3 
 	{
-		public:
-		Scalar m[4][4];
-		Matrix4D();
-		Matrix4D(Scalar m00, Scalar m01, Scalar m02, Scalar m03,
-				 Scalar m10, Scalar m11, Scalar m12, Scalar m13,
-				 Scalar m20, Scalar m21, Scalar m22, Scalar m23,
-				 Scalar m30, Scalar m31, Scalar m32, Scalar m33);
+	private:
+		Vector3D firstColumn;
+		Vector3D secondColumn;
+		Vector3D thirdColumn;
+		
+	public:
+		Matrix3x3();
+		Matrix3x3(Vector3D firstColumn, Vector3D econdColumn, Vector3D thirdColumn);
 
-		Matrix4D operator*(const Matrix4D& other) const;
+		Matrix3x3 operator*(const Matrix3x3& other) const;
 		Vector3D operator*(const Vector3D& vector) const;
 
-		static Matrix4D identity();
-		static Matrix4D translation(const Vector3D& translation);
-		static Matrix4D rotation(const Quaternion& quaternion);
-		static Matrix4D scale(const Vector3D& scale);
-
+		static Matrix3x3 identity();
 	};
 
 

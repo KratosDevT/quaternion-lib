@@ -17,6 +17,7 @@ void TestRotazioneNLerp(Graphics::Vector3D& vec2, Graphics::Quaternion& quaterni
 int main();
 void TestRotationEulerAngles();
 void TestRotazioneComposta(Graphics::Vector3D& vec2, Graphics::Quaternion& quaternionRotator1, Graphics::Quaternion& quaternionRotator2);
+void TestRotazione6Times(Graphics::Vector3D& vec2, Graphics::Quaternion& quaternionRotator1);
 void TestVectorClass();
 
 void customAssert(bool condition, const std::string& testName) {
@@ -31,17 +32,17 @@ void customAssert(bool condition, const std::string& testName) {
 
 int main()
 {
-    //TestVectorClass();
-    //Graphics::Quaternion quaternion = Graphics::Quaternion(1, 2, 3, 4);
-    //Graphics::Quaternion conjugate = Graphics::Quaternion(-1, -2, -3, 4);
-    //Graphics::Scalar squaredNorm = 30;
-    //TestQuaternionClass(quaternion, conjugate, squaredNorm);
+    TestVectorClass();
+    Graphics::Quaternion quaternion = Graphics::Quaternion(1, 2, 3, 4);
+    Graphics::Quaternion conjugate = Graphics::Quaternion(-1, -2, -3, 4);
+    Graphics::Scalar squaredNorm = 30;
+    TestQuaternionClass(quaternion, conjugate, squaredNorm);
 
-    //Graphics::Vector3D vec1 = Graphics::Vector3D(-1, 0, 0);
+    Graphics::Vector3D vec1 = Graphics::Vector3D(-1, 0, 0);
 
-    ////test asse angolo
-    //TestRotazioneAsseAngolo();
-    //TestRotazioneIdentitaria(vec1);
+    //test asse angolo
+    TestRotazioneAsseAngolo();
+    TestRotazioneIdentitaria(vec1);
 
     Graphics::Vector3D vec2 = Graphics::Vector3D(-1, 1, 0);
 
@@ -53,10 +54,32 @@ int main()
     Graphics::Scalar angle2 = PI;
     Graphics::Quaternion quaternionRotator2 = Graphics::Quaternion(axis2, angle2, Graphics::QuaternionType::FROM_AXIS_ANGLE);
 
-    //TestRotazioneNLerp(vec2, quaternionRotator1, quaternionRotator2);
-    //TestRotazioneSLerp(vec2, quaternionRotator1, quaternionRotator2);
+    TestRotazioneNLerp(vec2, quaternionRotator1, quaternionRotator2);
+    TestRotazioneSLerp(vec2, quaternionRotator1, quaternionRotator2);
     TestRotazioneComposta(vec2, quaternionRotator1, quaternionRotator2);
+    TestRotazione6Times(vec2, quaternionRotator1);
     TestRotationEulerAngles();
+}
+
+void TestRotazione6Times(Graphics::Vector3D& vec2, Graphics::Quaternion& quaternionRotator1)
+{
+    std::cout << "VERIFICA ROTAZIONE 6 VOLTE";
+    std::cout << std::endl;
+    Graphics::Quaternion quaternionRotator2 = quaternionRotator1 * quaternionRotator1 * quaternionRotator1 * quaternionRotator1 * quaternionRotator1 * quaternionRotator1;
+    std::cout << "Quaternione rotatore 6 volte: ";
+    printQuaternion(quaternionRotator2);
+    printQuaternionAxisAndAngle(quaternionRotator2);
+    std::cout << std::endl;
+    Graphics::Vector3D rotatedVec = quaternionRotator2.rotate(vec2);
+    std::cout << "Vettore originale: ";
+    printVector3D(vec2);
+    std::cout << std::endl;
+    std::cout << "Vettore ruotato con rotazione 6 volte: ";
+    printVector3D(rotatedVec);
+    std::cout << std::endl;
+    customAssert(rotatedVec == vec2, "verifica rotazione 6 volte");
+	std::cout << std::endl;
+    std::cout << std::endl;
 }
 
 void TestRotationEulerAngles() 
@@ -118,6 +141,8 @@ void TestRotazioneComposta(Graphics::Vector3D& vec2, Graphics::Quaternion& quate
     std::cout << std::endl;
 
 }
+
+
 
 void TestRotazioneSLerp(Graphics::Vector3D& vec2,Graphics::Quaternion& quaternionRotator2, Graphics::Quaternion& quaternionRotator3)
 {
