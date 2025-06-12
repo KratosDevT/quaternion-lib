@@ -126,6 +126,15 @@ namespace Graphics
 
 	Matrix3x3::Matrix3x3(Vector3D _firstColumn, Vector3D _secondColumn, Vector3D _thirdColumn) : firstColumn{ _firstColumn }, secondColumn{ _secondColumn }, thirdColumn{ _thirdColumn } {}
 
+	Vector3D Matrix3x3::operator*(const Vector3D& vector) const
+	{
+		return Vector3D(
+			firstColumn.getX() * vector.getX() + secondColumn.getX() * vector.getY() + thirdColumn.getX() * vector.getZ(),
+			firstColumn.getY() * vector.getX() + secondColumn.getY() * vector.getY() + thirdColumn.getY() * vector.getZ(),
+			firstColumn.getZ() * vector.getX() + secondColumn.getZ() * vector.getY() + thirdColumn.getZ() * vector.getZ()
+		);
+	}
+
 	const Quaternion Quaternion::IDENTITY{ 0, 0, 0, 1 };
 	const Quaternion Quaternion::ZERO{ 0, 0, 0, 0 };
 
@@ -144,6 +153,12 @@ namespace Graphics
 		printVector3D(axis);
 		std::cout << ", Angle: " << angle << " ]";
 		std::cout << std::endl;
+	}
+	void printMatrix3x3(const Matrix3x3& matrix) {
+		std::cout << "Matrix3x3: " << std::endl;
+		std::cout << "[" << matrix.getFirstColumn().getX() << ", " << matrix.getSecondColumn().getX() << ", " << matrix.getThirdColumn().getX() << "]" << std::endl;
+		std::cout << "[" << matrix.getFirstColumn().getY() << ", " << matrix.getSecondColumn().getY() << ", " << matrix.getThirdColumn().getY() << "]" << std::endl;
+		std::cout << "[" << matrix.getFirstColumn().getZ() << ", " << matrix.getSecondColumn().getZ() << ", " << matrix.getThirdColumn().getZ() << "]" << std::endl;
 	}
 
 	Quaternion::Quaternion() : img{ Vector3D::ORIGIN }, re{ 0 } {}
@@ -245,6 +260,21 @@ namespace Graphics
 		printQuaternion(result);*/
 		result.normalize();
 		return result;
+	}
+
+	Matrix3x3 Quaternion::exportToMatrix3x3() const
+	{
+		Scalar imgX = this->getImg().getX();
+		Scalar imgY = this->getImg().getY();
+		Scalar imgZ = this->getImg().getZ();
+		Scalar re = this->getRe();
+
+		return Matrix3x3(
+			Vector3D(1 - 2 * (imgY * imgY + imgZ * imgZ), 2 * (imgX * imgY + re * imgZ), 2 * (imgX * imgZ - re * imgY)),
+			Vector3D(2 * (imgX * imgY - re * imgZ), 1 - 2 * (imgX * imgX + imgZ * imgZ), 2 * (imgY * imgZ + re * imgX)),
+			Vector3D(2 * (imgX * imgZ + re * imgY), 2 * (imgY * imgZ + re * imgX), 1 - 2 * (imgX * imgX + imgY * imgY))
+		);
+
 	}
 
 	//The spherical linear interpolation of two quaternions.

@@ -18,6 +18,7 @@ int main();
 void TestRotationEulerAngles();
 void TestRotazioneComposta(Graphics::Vector3D& vec2, Graphics::Quaternion& quaternionRotator1, Graphics::Quaternion& quaternionRotator2);
 void TestRotazione6Times(Graphics::Vector3D& vec2, Graphics::Quaternion& quaternionRotator1);
+void TestRotazioneQuaternioneEMatrice(Graphics::Vector3D& vec2, Graphics::Quaternion& quaternionRotator1);
 void TestVectorClass();
 
 void customAssert(bool condition, const std::string& testName) {
@@ -58,6 +59,7 @@ int main()
     TestRotazioneSLerp(vec2, quaternionRotator1, quaternionRotator2);
     TestRotazioneComposta(vec2, quaternionRotator1, quaternionRotator2);
     TestRotazione6Times(vec2, quaternionRotator1);
+    TestRotazioneQuaternioneEMatrice(vec2, quaternionRotator1);
     TestRotationEulerAngles();
 }
 
@@ -78,6 +80,35 @@ void TestRotazione6Times(Graphics::Vector3D& vec2, Graphics::Quaternion& quatern
     printVector3D(rotatedVec);
     std::cout << std::endl;
     customAssert(rotatedVec == vec2, "verifica rotazione 6 volte");
+	std::cout << std::endl;
+    std::cout << std::endl;
+}
+
+void TestRotazioneQuaternioneEMatrice(Graphics::Vector3D& vec2, Graphics::Quaternion& quaternionRotator1)
+{
+    std::cout << "VERIFICA ROTAZIONE CON MATRICE E QUATERNIONE";
+    std::cout << std::endl;
+    Graphics::Matrix3x3 rotationMatrix = quaternionRotator1.exportToMatrix3x3();
+    std::cout << "Matrice di rotazione: ";
+    printMatrix3x3(rotationMatrix);
+    std::cout << std::endl;
+    Graphics::Vector3D rotatedVec = rotationMatrix * vec2;
+
+    std::cout << "Vettore originale: ";
+    printVector3D(vec2);
+    std::cout << std::endl;
+    std::cout << "Vettore ruotato con matrice di rotazione: ";
+    printVector3D(rotatedVec);
+    std::cout << std::endl;
+
+    Graphics::Vector3D rotatedVec2 = quaternionRotator1.rotate(vec2);
+    std::cout << "Quaternione: " << std::endl;
+    printQuaternion(quaternionRotator1);
+    printQuaternionAxisAndAngle(quaternionRotator1);
+    std::cout << "Vettore ruotato con quaternione: ";
+    printVector3D(rotatedVec2);
+    std::cout << std::endl;
+    customAssert(rotatedVec == rotatedVec2, "verifica rotazione con matrice e quaternione");
 	std::cout << std::endl;
     std::cout << std::endl;
 }

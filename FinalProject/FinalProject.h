@@ -7,7 +7,7 @@ namespace Graphics {
 	class Ray;
 	class Quaternion;
 	class Transforms;
-	class Matrix4D;
+	class Matrix3x3;
 
 	enum class QuaternionType 
 	{
@@ -28,6 +28,7 @@ namespace Graphics {
 	void printVector3D(const Vector3D& vector);
 	void printQuaternion(const Quaternion& quaternion);
 	void printQuaternionAxisAndAngle(const Quaternion& quaternion);
+	void printMatrix3x3(const Matrix3x3& matrix);
 
 	Scalar dot(const Vector3D& vec1, const Vector3D& vec2);
 	Vector3D cross(const Vector3D& vec1, const Vector3D& vec2);
@@ -99,6 +100,10 @@ namespace Graphics {
 		Vector3D operator*(const Vector3D& vector) const;
 
 		static Matrix3x3 identity();
+
+		Vector3D getFirstColumn() const { return firstColumn; }
+		Vector3D getSecondColumn() const { return secondColumn; }
+		Vector3D getThirdColumn() const { return thirdColumn; }
 	};
 
 
@@ -147,7 +152,7 @@ namespace Graphics {
 		Quaternion(Scalar imgX, Scalar imgY, Scalar imgZ, Scalar re); 
 		Quaternion(Vector3D vector, Scalar scalar, QuaternionType type);
 		Quaternion(Scalar roll, Scalar pitch, Scalar yaw);
-		Quaternion(Matrix4D rotationMatrix);
+		Quaternion(Matrix3x3 rotationMatrix);
 
 		Scalar squaredNorm() const;
 		Scalar norm() const;
@@ -163,6 +168,7 @@ namespace Graphics {
 
 		Vector3D getAxis() const;
 		Scalar getAngle() const;
+		Matrix3x3 exportToMatrix3x3() const;
 
 		// Getters and Setters
 		Scalar getRe() const { return re; }
